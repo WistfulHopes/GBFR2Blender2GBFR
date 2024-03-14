@@ -16,7 +16,7 @@ def importMot(file: str, printProgress: bool = True) -> None:
 	
 	# ensure that armature is in correct T-Pose
 	armatureObj = getArmatureObject()
-	fixTPose(armatureObj)
+	# fixTPose(armatureObj)
 	for obj in [*armatureObj.pose.bones, armatureObj]:
 		obj.location = (0, 0, 0)
 		obj.rotation_mode = "XYZ"
@@ -42,6 +42,9 @@ def importMot(file: str, printProgress: bool = True) -> None:
 	for record in records:
 		if not record.getBone() and record.boneIndex != -1:
 			print(f"WARNING: Bone {record.boneIndex} not found in armature")
+			continue
+		if record.propertyIndex in {14, 15, 16}:
+			print(f"WARNING: PropertyIndex {record.propertyIndex} does not support in current tool")
 			continue
 		motRecords.append(record)
 

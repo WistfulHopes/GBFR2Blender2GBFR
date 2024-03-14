@@ -12,8 +12,14 @@ def update_clh_bone_items():
     global bone_items
     bone_items = []
 
+    collObj = None
+    for coll in bpy.data.collections:
+        if coll.name.startswith("GBFR Model Collection"):
+            collObj = coll
+            break
+
     armatureObj = None
-    for obj in bpy.data.collections['Mesh Collection'].all_objects:
+    for obj in collObj.all_objects:
         if obj.type == 'ARMATURE':
             armatureObj = obj
             break
@@ -26,8 +32,14 @@ def update_clh_bone_items():
             bone_items.append((bid, bone.name + " (" + bid + ")", ""))
 
 def get_bone_from_id(bone_id):
+    collObj = None
+    for coll in bpy.data.collections:
+        if coll.name.startswith("GBFR Model Collection"):
+            collObj = coll
+            break
+
     armatureObj = None
-    for obj in bpy.data.collections['Mesh Collection'].all_objects:
+    for obj in coll.all_objects:
         if obj.type == 'ARMATURE':
             armatureObj = obj
             break

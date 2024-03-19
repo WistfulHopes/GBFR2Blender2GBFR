@@ -17,7 +17,7 @@ def importMot(file: str, armarture: bpy.types.Object, printProgress: bool = True
 	# ensure that armature is in correct T-Pose
 	armatureObj = armarture
 	# fixTPose(armatureObj)
-	for obj in [*armatureObj.pose.bones, armatureObj]:
+	for obj in [*armatureObj.pose.bones]:
 		obj.location = (0, 0, 0)
 		obj.rotation_mode = "XYZ"
 		obj.rotation_euler = (0, 0, 0)

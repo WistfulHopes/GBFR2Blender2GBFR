@@ -3,7 +3,7 @@ from mathutils import Vector
 import re
 import os
 from typing import List
-from ..common.motUtils import KeyFrame, Spline, getArmatureObject
+from ..common.motUtils import KeyFrame, Spline
 from ..common.mot import MotFile, MotHeader, MotRecord, MotInterpolValues, MotInterpolSplines
 
 class AnimationObject:
@@ -167,12 +167,12 @@ def makeRecords(animObjs: List[AnimationObject]) -> List[MotRecord]:
 
 	return records
 
-def addAdditionPatchRecords(path: str, currentRecords: List[MotRecord]):
+def addAdditionPatchRecords(path: str, currentRecords: List[MotRecord], armature: bpy.types.Object):
 	with open(path, "rb") as f:
 		mot = MotFile()
 		mot.fromFile(f)
 	
-	arm = getArmatureObject()
+	arm = armature
 	allCurrentBoneIds = set([
 		int(bone.bone.name[-3:], 16)
 		for bone in arm.pose.bones
@@ -194,8 +194,8 @@ def addAdditionPatchRecords(path: str, currentRecords: List[MotRecord]):
 	currentRecords.sort(key=lambda record: record.boneIndex * 10 + record.propertyIndex)
 
 
-def exportMot(path: str, patchExisting: bool):
-	arm = getArmatureObject()
+def exportMot(path: str, patchExisting: bool, armature: bpy.types.Object):
+	arm = armature
 	if arm is None:
 		raise Exception("No armature found")
 	
@@ -205,7 +205,7 @@ def exportMot(path: str, patchExisting: bool):
 
 	# if patching, inject records of missing bones
 	if patchExisting:
-		addAdditionPatchRecords(path, records)
+		addAdditionPatchRecords(path, records, armature=armature)
 	
 	# make header
 	header = MotHeader()

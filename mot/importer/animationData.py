@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List
 import bpy
-from ..common.motUtils import KeyFrame, KeyFrameCombo, getArmatureObject, getBoneFCurve, getObjFCurve
+from ..common.motUtils import KeyFrame, KeyFrameCombo, getBoneFCurve, getObjFCurve
 from ..common.mot import MotRecord
 
 class PropertyAnimation:
@@ -20,12 +20,12 @@ class PropertyAnimation:
 	armatureObj: bpy.types.Object
 	
 	@staticmethod
-	def fromRecord(record: MotRecord) -> PropertyAnimation:
+	def fromRecord(record: MotRecord, armature: bpy.types.object) -> PropertyAnimation:
 		anim = PropertyAnimation()
 		anim.propertyName = record.getPropertyPath()
 		anim.propertyNameIndex = PropertyAnimation._propertyNameToIndex[anim.propertyName]
 		anim.channelIndex = record.getPropertyIndex()
-		anim.armatureObj = getArmatureObject()
+		anim.armatureObj = armature
 		anim.flag = record.interpolationType
 		if record.boneIndex != -1:
 			anim.bone = record.getBone()

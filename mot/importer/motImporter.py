@@ -6,16 +6,16 @@ from ..common.motUtils import *
 from .rotationWrapperObj import objRotationWrapper
 from .tPoseFixer import fixTPose
 
-def importMot(file: str, printProgress: bool = True) -> None:
+def importMot(file: str, armarture: bpy.types.Object, printProgress: bool = True) -> None:
 	# import mot file
-	mot = MotFile()
+	mot = MotFile(armarture)
 	with open(file, "rb") as f:
 		mot.fromFile(f)
 	header = mot.header
 	records = mot.records
 	
 	# ensure that armature is in correct T-Pose
-	armatureObj = getArmatureObject()
+	armatureObj = armarture
 	# fixTPose(armatureObj)
 	for obj in [*armatureObj.pose.bones, armatureObj]:
 		obj.location = (0, 0, 0)
@@ -23,6 +23,11 @@ def importMot(file: str, printProgress: bool = True) -> None:
 		obj.rotation_euler = (0, 0, 0)
 		obj.scale = (1, 1, 1)
 	
+	# CAUSION:
+	#   Coordinate system between 
+	#       GBFR model (left-handed?, Y-up)
+	#   and blender    (right-handed, Z-up)
+	#   is different
 	# 90 degree rotation wrapper, to adjust for Y-up
 	objRotationWrapper(armatureObj)
 
@@ -50,7 +55,7 @@ def importMot(file: str, printProgress: bool = True) -> None:
 
 	animations: List[PropertyAnimation] = []
 	for record in motRecords:
-		animations.append(PropertyAnimation.fromRecord(record))
+		animations.append(PropertyAnimation.fromRecord(record, armatureObj))
 	
 	# apply to blender
 	for i, animation in enumerate(animations):

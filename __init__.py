@@ -182,6 +182,20 @@ def register():
     bpy.app.handlers.load_post.append(checkOldVersionMigration)
     bpy.app.handlers.depsgraph_update_post.append(initialCheckCustomPanelsEnableDisable)
 
+def cleanse_modules():
+    """search for your plugin modules in blender python sys.modules and remove them"""
+
+    import sys
+
+    all_modules = sys.modules 
+    all_modules = dict(sorted(all_modules.items(),key= lambda x:x[0])) #sort them
+   
+    for k,v in all_modules.items():
+        if k.startswith(__name__):
+            del sys.modules[k]
+
+    return None 
+
 def unregister():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
@@ -206,6 +220,8 @@ def unregister():
     bpy.app.handlers.load_post.remove(checkOldVersionMigration)
     if initialCheckCustomPanelsEnableDisable in bpy.app.handlers.depsgraph_update_post:
         bpy.app.handlers.depsgraph_update_post.remove(initialCheckCustomPanelsEnableDisable)
+
+    cleanse_modules()
 
 @persistent
 def checkCustomPanelsEnableDisable(_, __):

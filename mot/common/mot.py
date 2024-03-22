@@ -6,14 +6,18 @@ from ...utils.ioUtils import *
 from io import BufferedReader
 
 class MotFile:
+	armature: bpy.types.Object
 	header: MotHeader
 	records: List[MotRecord]
 
+	def __init__(self, armature: bpy.types.Object):
+		self.armature = armature
+
 	def fromFile(self, file: BufferedReader):
-		self.header = MotHeader()
+		self.header = MotHeader(self.armature)
 		self.header.fromFile(file)
 		self.records = [
-			MotRecord().fromFile(file)
+			MotRecord(self.armature).fromFile(file)
 			for _ in range(self.header.recordsCount)
 		]
 	
@@ -21,7 +25,7 @@ class MotFile:
 		self.header.writeToFile(file)
 		for record in self.records:
 			record.writeToFile(file)
-		trailingRecord = MotRecord()
+		trailingRecord = MotRecord(self.armature)
 		trailingRecord.makeTrailingRecord()
 		trailingRecord.writeToFile(file)
 		for record in self.records:
@@ -30,6 +34,7 @@ class MotFile:
 			record.interpolation.writeToFile(file)
 
 class MotHeader:
+	armature: bpy.types.Object
 	magic: int
 	hash: int
 	flag: int
@@ -38,6 +43,9 @@ class MotHeader:
 	recordsCount: int
 	unknown: int
 	animationName: str
+
+	def __init__(self, armature: bpy.types.Object):
+		self.armature = armature
 
 	def fromFile(self, file: BufferedReader):
 		self.magic = read_uint32(file)
@@ -72,6 +80,7 @@ class MotHeader:
 		file.write(animationName)
 
 class MotRecord:
+	armature: bpy.types.Object
 	boneIndex: int
 	propertyIndex: int
 	interpolationType: int
@@ -80,6 +89,9 @@ class MotRecord:
 	value: float
 	interpolationsOffset: int
 	interpolation: MotInterpolation
+
+	def __init__(self, armature: bpy.types.Object):
+		self.armature = armature
 
 	def fromFile(self, file: BufferedReader) -> MotRecord:
 		self.boneIndex = read_int16(file)
@@ -118,7 +130,7 @@ class MotRecord:
 			write_uInt32(file, self.interpolationsOffset)
 	
 	def getBone(self) -> bpy.types.PoseBone|None:
-		rig = getArmatureObject()
+		rig = self.armature
 		boneName: str = ""
 		if self.boneIndex == -1:
 			return None

@@ -39,20 +39,30 @@ class Spline:
 		self.m0 = m0
 		self.m1 = m1
 
-def getArmatureObject() -> bpy.types.Object:
-	activeObj = bpy.context.active_object
-	if activeObj is not None and activeObj.type == "ARMATURE":
-		return activeObj
-	allArmatures = [obj for obj in bpy.data.objects if obj.type == "ARMATURE"]
-	if len(allArmatures) == 0:
+def getArmatureObject(collection_name: str) -> bpy.types.Object:
+	if collection_name == "__auto__":
+		# First: selected object
+		activeObj = bpy.context.active_object
+		if activeObj is not None and activeObj.type == "ARMATURE":
+			return activeObj
+
+		# Second: The first ARMATURE object in bpy.data
+		allArmatures = [obj for obj in bpy.data.objects if obj.type == "ARMATURE"]
+		if len(allArmatures) > 0:
+			return allArmatures[0]
+
 		return None
-	wmbColl = bpy.data.collections.get("WMB")
-	if wmbColl is None:
-		return allArmatures[0]
-	armaturesInWmbColl = [obj for obj in wmbColl.all_objects if obj.type == "ARMATURE"]
-	if len(armaturesInWmbColl) == 0:
-		return allArmatures[0]
-	return armaturesInWmbColl[0]
+
+	# search armature by collection
+	coll = bpy.data.collections.get(collection_name)
+	if coll is None:
+		return None
+
+	armaturesInColl = [obj for obj in coll.all_objects if obj.type == "ARMATURE"]
+	if len(armaturesInColl) == 0:
+		return None
+
+	return armaturesInColl[0]
 
 def getBoneFCurve(armatureObj: bpy.types.Object, bone: bpy.types.PoseBone, property: str, index: int) -> bpy.types.FCurve:
 	for fCurve in armatureObj.animation_data.action.fcurves:
